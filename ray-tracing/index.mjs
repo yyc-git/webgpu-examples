@@ -15,7 +15,10 @@ Object.assign(global, glMatrix);
     resizable: false
   });
 
-  let adapter = await GPU.requestAdapter({ window });
+  let adapter = await GPU.requestAdapter({
+    window,
+    preferredBackend: "Vulkan"
+  });
 
   let device = await adapter.requestDevice({
     extensions: ["ray_tracing"]
@@ -63,8 +66,14 @@ Object.assign(global, glMatrix);
   let rayCHitShaderModule = device.createShaderModule({
     code: fs.readFileSync(`${baseShaderPath}/ray-closest-hit.rchit`, "utf-8")
   });
+  let rayShadowCHitShaderModule = device.createShaderModule({
+    code: fs.readFileSync(`${baseShaderPath}/ray-closest-hit-shadow.rchit`, "utf-8")
+  });
   let rayMissShaderModule = device.createShaderModule({
     code: fs.readFileSync(`${baseShaderPath}/ray-miss.rmiss`, "utf-8")
+  });
+  let rayShadowMissShaderModule = device.createShaderModule({
+    code: fs.readFileSync(`${baseShaderPath}/ray-miss-shadow.rmiss`, "utf-8")
   });
 
   // this storage buffer is used as a pixel buffer
@@ -77,9 +86,9 @@ Object.assign(global, glMatrix);
   });
 
   let triangleVertices = new Float32Array([
-     1.0,  1.0, 0.0,
-    -1.0,  1.0, 0.0,
-     0.0, -1.0, 0.0
+    1.0, 1.0, 0.0,
+    -1.0, 1.0, 0.0,
+    0.0, -1.0, 0.0
   ]);
   let triangleVertexBuffer = device.createBuffer({
     size: triangleVertices.byteLength,
@@ -133,8 +142,12 @@ Object.assign(global, glMatrix);
         instanceId: 0,
         instanceOffset: 0x0,
         transform: {
-          translation: { x: 0, y: 0, z: 0 },
-          rotation: { x: 0, y: 0, z: 0 },
+          // translation: { x: 0, y: 0, z: 0 },
+          // rotation: { x: 0, y: 0, z: 0 },
+          // scale: { x: 1, y: 1, z: 1 }
+
+          translation: { x: 1, y: 1, z: 1 },
+          rotation: { x: 1, y: 1, z: 1 },
           scale: { x: 1, y: 1, z: 1 }
         },
         geometryContainer: geometryContainer
@@ -146,7 +159,7 @@ Object.assign(global, glMatrix);
   {
     let commandEncoder = device.createCommandEncoder({});
     commandEncoder.buildRayTracingAccelerationContainer(geometryContainer);
-    queue.submit([ commandEncoder.finish() ]);
+    queue.submit([commandEncoder.finish()]);
   }
 
   // now we can build the top-level containers
@@ -154,9 +167,12 @@ Object.assign(global, glMatrix);
   {
     let commandEncoder = device.createCommandEncoder({});
     commandEncoder.buildRayTracingAccelerationContainer(instanceContainer);
-    queue.submit([ commandEncoder.finish() ]);
+    queue.submit([commandEncoder.finish()]);
   }
 
+  let rayShadowCHitShaderModule = device.createShaderModule({
+    code: fs.readFileSync(`${baseShaderPath}/ray-closest-hit-shadow.rchit`, "utf-8")
+  });
   // a collection of shader modules which get dynamically
   // invoked, for example when calling traceNV
   let shaderBindingTable = device.createRayTracingShaderBindingTable({
@@ -172,9 +188,17 @@ Object.assign(global, glMatrix);
         stage: GPUShaderStage.RAY_CLOSEST_HIT
       },
       {
+        module: rayShadowCHitShaderModule,
+        stage: GPUShaderStage.RAY_CLOSEST_HIT
+      },
+      {
         module: rayMissShaderModule,
         stage: GPUShaderStage.RAY_MISS
-      }
+      },
+      {
+        module: rayShadowMissShaderModule,
+        stage: GPUShaderStage.RAY_MISS
+      },
     ],
     // groups can index the shaders in stages
     // generalIndex: ray generation or ray miss stage index
@@ -198,14 +222,29 @@ Object.assign(global, glMatrix);
         closestHitIndex: 1, // ray closest-hit shader index
         intersectionIndex: -1
       },
+      // hit group
+      {
+        type: "triangles-hit-group",
+        generalIndex: -1,
+        anyHitIndex: -1,
+        closestHitIndex: 2, // ray closest-hit shader index
+        intersectionIndex: -1
+      },
       // miss group
       {
         type: "general",
-        generalIndex: 2, // ray miss shader index
+        generalIndex: 3, // ray miss shader index
         anyHitIndex: -1,
         closestHitIndex: -1,
         intersectionIndex: -1
-      }
+      },
+      {
+        type: "general",
+        generalIndex: 4, // ray miss shader index
+        anyHitIndex: -1,
+        closestHitIndex: -1,
+        intersectionIndex: -1
+      },
     ]
   });
 
@@ -280,7 +319,7 @@ Object.assign(global, glMatrix);
     rayTracingState: {
       shaderBindingTable,
       maxRecursionDepth: 1,
-      maxPayloadSize: 3 * Float32Array.BYTES_PER_ELEMENT
+      maxPayloadSize: 4 * Float32Array.BYTES_PER_ELEMENT
     }
   });
 
@@ -366,16 +405,16 @@ Object.assign(global, glMatrix);
       let passEncoder = commandEncoder.beginRayTracingPass({});
       passEncoder.setPipeline(rtPipeline);
       passEncoder.setBindGroup(0, rtBindGroup);
-      passEncoder.traceRays(
+      passEncoder.tracRays(
         0, // sbt ray-generation offset
         1, // sbt ray-hit offset
-        2, // sbt ray-miss offset
+        3, // sbt ray-miss offset
         window.width,  // query width dimension
         window.height, // query height dimension
         1              // query depth dimension
       );
       passEncoder.endPass();
-      queue.submit([ commandEncoder.finish() ]);
+      queue.submit([commandEncoder.finish()]);
 
     }
     // rasterization pass
@@ -396,7 +435,7 @@ Object.assign(global, glMatrix);
       passEncoder.setBindGroup(0, renderBindGroup);
       passEncoder.draw(3, 1, 0, 0);
       passEncoder.endPass();
-      queue.submit([ commandEncoder.finish() ]);
+      queue.submit([commandEncoder.finish()]);
     }
 
     swapChain.present();
