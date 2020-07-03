@@ -170,9 +170,6 @@ Object.assign(global, glMatrix);
     queue.submit([commandEncoder.finish()]);
   }
 
-  let rayShadowCHitShaderModule = device.createShaderModule({
-    code: fs.readFileSync(`${baseShaderPath}/ray-closest-hit-shadow.rchit`, "utf-8")
-  });
   // a collection of shader modules which get dynamically
   // invoked, for example when calling traceNV
   let shaderBindingTable = device.createRayTracingShaderBindingTable({
@@ -405,7 +402,7 @@ Object.assign(global, glMatrix);
       let passEncoder = commandEncoder.beginRayTracingPass({});
       passEncoder.setPipeline(rtPipeline);
       passEncoder.setBindGroup(0, rtBindGroup);
-      passEncoder.tracRays(
+      passEncoder.traceRays(
         0, // sbt ray-generation offset
         1, // sbt ray-hit offset
         3, // sbt ray-miss offset

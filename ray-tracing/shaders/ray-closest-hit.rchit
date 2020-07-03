@@ -2,7 +2,7 @@
 #extension GL_EXT_ray_tracing : enable
 #pragma shader_stage(closest)
 
-layout(location = 0) rayPayloadEXT vec3 hitValue;
+layout(location = 0) rayPayloadInEXT vec3 hitValue;
 layout(location = 1) rayPayloadEXT bool isShadowed;
 
 layout(set = 0, binding = 0) uniform accelerationStructureEXT topLevelAS;
