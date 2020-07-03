@@ -206,41 +206,26 @@ Object.assign(global, glMatrix);
       // generation group
       {
         type: "general",
-        generalIndex: 0, // ray generation shader index
-        anyHitIndex: -1,
-        closestHitIndex: -1,
-        intersectionIndex: -1
+        generalIndex: 0 // ray generation shader index
       },
       // hit group
       {
         type: "triangles-hit-group",
-        generalIndex: -1,
-        anyHitIndex: -1,
-        closestHitIndex: 1, // ray closest-hit shader index
-        intersectionIndex: -1
+        closestHitIndex: 1 // ray closest-hit shader index
       },
       // hit group
       {
         type: "triangles-hit-group",
-        generalIndex: -1,
-        anyHitIndex: -1,
-        closestHitIndex: 2, // ray closest-hit shader index
-        intersectionIndex: -1
+        closestHitIndex: 2 // ray closest-hit shader index
       },
       // miss group
       {
         type: "general",
-        generalIndex: 3, // ray miss shader index
-        anyHitIndex: -1,
-        closestHitIndex: -1,
-        intersectionIndex: -1
+        generalIndex: 3 // ray miss shader index
       },
       {
         type: "general",
-        generalIndex: 4, // ray miss shader index
-        anyHitIndex: -1,
-        closestHitIndex: -1,
-        intersectionIndex: -1
+        generalIndex: 4 // ray miss shader index
       },
     ]
   });
@@ -249,7 +234,7 @@ Object.assign(global, glMatrix);
     entries: [
       {
         binding: 0,
-        visibility: GPUShaderStage.RAY_GENERATION,
+        visibility: GPUShaderStage.RAY_GENERATION | GPUShaderStage.RAY_CLOSEST_HIT,
         type: "acceleration-container"
       },
       {
@@ -394,6 +379,7 @@ Object.assign(global, glMatrix);
   function onFrame() {
     if (!window.shouldClose()) setTimeout(onFrame, 1e3 / 60);
 
+    console.log("onFrame");
     let backBufferView = swapChain.getCurrentTextureView();
 
     // ray tracing pass

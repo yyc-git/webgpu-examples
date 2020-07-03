@@ -2,6 +2,6 @@
 #extension GL_EXT_ray_tracing : enable
 #pragma shader_stage(closest)
 
-void main() {
-  return;
-}
+layout(location = 1) rayPayloadInEXT bool isShadowed;
+
+void main() { isShadowed = true; }
