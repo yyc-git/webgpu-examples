@@ -6,19 +6,23 @@ layout(location = 0) rayPayloadEXT vec3 hitValue;
 
 layout(binding = 0, set = 0) uniform accelerationStructureEXT topLevelAS;
 
-layout(std140, set = 0, binding = 1) buffer PixelBuffer {
-  vec4 pixels[];
-} pixelBuffer;
+layout(std140, set = 0, binding = 1) buffer PixelBuffer { vec4 pixels[]; }
+pixelBuffer;
 
 void main() {
   const float tMin = 0.1;
   float tMax = 1.0e38f;
-  // uint flags = gl_RayFlagsNoneEXT;
   uint flags = gl_RayFlagsOpaqueEXT;
 
-  vec3 origin = vec3(0.0);
+  vec3 origin = vec3(0.1);
+
+  // note: this rayDir will work successfully:
   // vec3 rayDir = vec3(0.0);
-  vec3 rayDir = vec3(0.2);
+  // vec3 rayDir = vec3(0.2,0.3,0.1);
+
+  // note: this rayDir will collapse :
+  vec3 rayDir = vec3(-0.2, -0.3, -0.1);
+  // vec3 rayDir = vec3(0.2);
 
   traceRayEXT(topLevelAS, // acceleration structure
               flags,      // rayFlags

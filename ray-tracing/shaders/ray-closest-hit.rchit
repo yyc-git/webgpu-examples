@@ -13,8 +13,6 @@ void main() {
   vec3 origin = vec3(0.0);
   vec3 rayDir = vec3(0.1);
 
-  // uint flags = gl_RayFlagsTerminateOnFirstHitEXT | gl_RayFlagsOpaqueEXT |
-  //              gl_RayFlagsSkipClosestHitShaderEXT;
   uint flags = gl_RayFlagsTerminateOnFirstHitEXT;
   isShadowed = true;
 

@@ -85,7 +85,120 @@ Object.assign(global, glMatrix);
     usage: GPUBufferUsage.STORAGE
   });
 
-  let triangleVertices = new Float32Array([
+  // let triangleVertices = new Float32Array([
+  //   1.0, 1.0, 0.0,
+  //   -1.0, 1.0, 0.0,
+  //   0.0, -1.0, 0.0
+  // ]);
+  // let triangleVertexBuffer = device.createBuffer({
+  //   size: triangleVertices.byteLength,
+  //   usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.RAY_TRACING
+  // });
+  // triangleVertexBuffer.setSubData(0, triangleVertices);
+
+  // let triangleIndices = new Uint32Array([
+  //   0, 1, 2
+  // ]);
+  // let triangleIndexBuffer = device.createBuffer({
+  //   size: triangleIndices.byteLength,
+  //   usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.RAY_TRACING
+  // });
+  // triangleIndexBuffer.setSubData(0, triangleIndices);
+
+  // // create a geometry container
+  // // which holds references to our geometry buffers
+  // let geometryContainer = device.createRayTracingAccelerationContainer({
+  //   level: "bottom",
+  //   usage: GPURayTracingAccelerationContainerUsage.PREFER_FAST_TRACE,
+  //   geometries: [
+  //     {
+  //       usage: GPURayTracingAccelerationGeometryUsage.OPAQUE,
+  //       type: "triangles",
+  //       vertex: {
+  //         buffer: triangleVertexBuffer,
+  //         format: "float3",
+  //         stride: 3 * Float32Array.BYTES_PER_ELEMENT,
+  //         count: triangleVertices.length
+  //       },
+  //       index: {
+  //         buffer: triangleIndexBuffer,
+  //         format: "uint32",
+  //         count: triangleIndices.length
+  //       }
+  //     }
+  //   ]
+  // });
+
+
+  // let geometryContainer2 = device.createRayTracingAccelerationContainer({
+  //   level: "bottom",
+  //   usage: GPURayTracingAccelerationContainerUsage.PREFER_FAST_TRACE,
+  //   geometries: [
+  //     {
+  //       usage: GPURayTracingAccelerationGeometryUsage.OPAQUE,
+  //       type: "triangles",
+  //       vertex: {
+  //         buffer: triangleVertexBuffer,
+  //         format: "float3",
+  //         stride: 3 * Float32Array.BYTES_PER_ELEMENT,
+  //         count: triangleVertices.length
+  //       },
+  //       index: {
+  //         buffer: triangleIndexBuffer,
+  //         format: "uint32",
+  //         count: triangleIndices.length
+  //       }
+  //     }
+  //   ]
+  // });
+
+  // // create an instance container
+  // // which contains object instances with transforms
+  // // and links to a geometry container to be used
+  // let instanceContainer = device.createRayTracingAccelerationContainer({
+  //   level: "top",
+  //   usage: GPURayTracingAccelerationContainerUsage.PREFER_FAST_TRACE,
+  //   instances: [
+  //     {
+  //       usage: GPURayTracingAccelerationInstanceUsage.TRIANGLE_CULL_DISABLE,
+  //       mask: 0xFF,
+  //       instanceId: 0,
+  //       instanceOffset: 0x0,
+  //       transform: {
+  //         // translation: { x: 0, y: 0, z: 0 },
+  //         // rotation: { x: 0, y: 0, z: 0 },
+  //         // scale: { x: 1, y: 1, z: 1 }
+
+  //         translation: { x: 1, y: 1, z: 1 },
+  //         rotation: { x: 1, y: 1, z: 1 },
+  //         scale: { x: 1, y: 1, z: 1 }
+  //       },
+  //       geometryContainer: geometryContainer
+  //     }
+  //   ]
+  // });
+
+  // // first build all bottom-level containers
+  // {
+  //   let commandEncoder = device.createCommandEncoder({});
+  //   commandEncoder.buildRayTracingAccelerationContainer(geometryContainer);
+  //   queue.submit([commandEncoder.finish()]);
+  // }
+
+  // // now we can build the top-level containers
+  // // building them in separate passes is important
+  // {
+  //   let commandEncoder = device.createCommandEncoder({});
+  //   commandEncoder.buildRayTracingAccelerationContainer(instanceContainer);
+  //   queue.submit([commandEncoder.finish()]);
+  // }
+
+
+
+
+
+
+    let triangleVertices = new Float32Array([
     1.0, 1.0, 0.0,
     -1.0, 1.0, 0.0,
     0.0, -1.0, 0.0
@@ -104,6 +217,40 @@ Object.assign(global, glMatrix);
     usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.RAY_TRACING
   });
   triangleIndexBuffer.setSubData(0, triangleIndices);
+
+
+
+  let triangleVertices2 = new Float32Array([
+    1.0,
+    0.0,
+    (-1.0),
+    1.0,
+    0.0,
+    1.0,
+    (-1.0),
+    0.0,
+    1.0,
+    (-1.0),
+    0.0,
+    (-1.0),
+  ]);
+  let triangleVertexBuffer2 = device.createBuffer({
+    size: triangleVertices2.byteLength,
+    usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.RAY_TRACING
+  });
+  triangleVertexBuffer2.setSubData(0, triangleVertices2);
+
+  let triangleIndices2 = new Uint32Array([
+2, 1, 0, 0, 3, 2
+  ]);
+  let triangleIndexBuffer2 = device.createBuffer({
+    size: triangleIndices2.byteLength,
+    usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.RAY_TRACING
+  });
+  triangleIndexBuffer2.setSubData(0, triangleIndices2);
+
+
+
 
   // create a geometry container
   // which holds references to our geometry buffers
@@ -124,6 +271,29 @@ Object.assign(global, glMatrix);
           buffer: triangleIndexBuffer,
           format: "uint32",
           count: triangleIndices.length
+        }
+      },
+    ]
+  });
+
+
+  let geometryContainer2 = device.createRayTracingAccelerationContainer({
+    level: "bottom",
+    usage: GPURayTracingAccelerationContainerUsage.PREFER_FAST_TRACE,
+    geometries: [
+      {
+        usage: GPURayTracingAccelerationGeometryUsage.OPAQUE,
+        type: "triangles",
+        vertex: {
+          buffer: triangleVertexBuffer2,
+          format: "float3",
+          stride: 3 * Float32Array.BYTES_PER_ELEMENT,
+          count: triangleVertices2.length
+        },
+        index: {
+          buffer: triangleIndexBuffer2,
+          format: "uint32",
+          count: triangleIndices2.length
         }
       }
     ]
@@ -151,6 +321,22 @@ Object.assign(global, glMatrix);
           scale: { x: 1, y: 1, z: 1 }
         },
         geometryContainer: geometryContainer
+      },
+      {
+        usage: GPURayTracingAccelerationInstanceUsage.TRIANGLE_CULL_DISABLE,
+        mask: 0xFF,
+        instanceId: 1,
+        instanceOffset: 0x0,
+        transform: {
+          // translation: { x: 0, y: 0, z: 0 },
+          // rotation: { x: 0, y: 0, z: 0 },
+          // scale: { x: 1, y: 1, z: 1 }
+
+          translation: { x: 0, y: -10, z: -5 },
+          rotation: { x: 0, y: 0, z: 0 },
+          scale: { x: 50, y: 50, z: 50 }
+        },
+        geometryContainer: geometryContainer2
       }
     ]
   });
@@ -159,6 +345,7 @@ Object.assign(global, glMatrix);
   {
     let commandEncoder = device.createCommandEncoder({});
     commandEncoder.buildRayTracingAccelerationContainer(geometryContainer);
+    commandEncoder.buildRayTracingAccelerationContainer(geometryContainer2);
     queue.submit([commandEncoder.finish()]);
   }
 
@@ -169,6 +356,11 @@ Object.assign(global, glMatrix);
     commandEncoder.buildRayTracingAccelerationContainer(instanceContainer);
     queue.submit([commandEncoder.finish()]);
   }
+
+
+
+
+
 
   // a collection of shader modules which get dynamically
   // invoked, for example when calling traceNV
