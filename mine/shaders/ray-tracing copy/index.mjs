@@ -66,6 +66,9 @@ Object.assign(global, glMatrix);
   let rayCHitShaderModule = device.createShaderModule({
     code: fs.readFileSync(`${baseShaderPath}/ray-closest-hit.rchit`, "utf-8")
   });
+  let rayShadowCHitShaderModule = device.createShaderModule({
+    code: fs.readFileSync(`${baseShaderPath}/ray-closest-hit-shadow.rchit`, "utf-8")
+  });
   let rayMissShaderModule = device.createShaderModule({
     code: fs.readFileSync(`${baseShaderPath}/ray-miss.rmiss`, "utf-8")
   });
@@ -82,7 +85,120 @@ Object.assign(global, glMatrix);
     usage: GPUBufferUsage.STORAGE
   });
 
-  let triangleVertices = new Float32Array([
+  // let triangleVertices = new Float32Array([
+  //   1.0, 1.0, 0.0,
+  //   -1.0, 1.0, 0.0,
+  //   0.0, -1.0, 0.0
+  // ]);
+  // let triangleVertexBuffer = device.createBuffer({
+  //   size: triangleVertices.byteLength,
+  //   usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.RAY_TRACING
+  // });
+  // triangleVertexBuffer.setSubData(0, triangleVertices);
+
+  // let triangleIndices = new Uint32Array([
+  //   0, 1, 2
+  // ]);
+  // let triangleIndexBuffer = device.createBuffer({
+  //   size: triangleIndices.byteLength,
+  //   usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.RAY_TRACING
+  // });
+  // triangleIndexBuffer.setSubData(0, triangleIndices);
+
+  // // create a geometry container
+  // // which holds references to our geometry buffers
+  // let geometryContainer = device.createRayTracingAccelerationContainer({
+  //   level: "bottom",
+  //   usage: GPURayTracingAccelerationContainerUsage.PREFER_FAST_TRACE,
+  //   geometries: [
+  //     {
+  //       usage: GPURayTracingAccelerationGeometryUsage.OPAQUE,
+  //       type: "triangles",
+  //       vertex: {
+  //         buffer: triangleVertexBuffer,
+  //         format: "float3",
+  //         stride: 3 * Float32Array.BYTES_PER_ELEMENT,
+  //         count: triangleVertices.length
+  //       },
+  //       index: {
+  //         buffer: triangleIndexBuffer,
+  //         format: "uint32",
+  //         count: triangleIndices.length
+  //       }
+  //     }
+  //   ]
+  // });
+
+
+  // let geometryContainer2 = device.createRayTracingAccelerationContainer({
+  //   level: "bottom",
+  //   usage: GPURayTracingAccelerationContainerUsage.PREFER_FAST_TRACE,
+  //   geometries: [
+  //     {
+  //       usage: GPURayTracingAccelerationGeometryUsage.OPAQUE,
+  //       type: "triangles",
+  //       vertex: {
+  //         buffer: triangleVertexBuffer,
+  //         format: "float3",
+  //         stride: 3 * Float32Array.BYTES_PER_ELEMENT,
+  //         count: triangleVertices.length
+  //       },
+  //       index: {
+  //         buffer: triangleIndexBuffer,
+  //         format: "uint32",
+  //         count: triangleIndices.length
+  //       }
+  //     }
+  //   ]
+  // });
+
+  // // create an instance container
+  // // which contains object instances with transforms
+  // // and links to a geometry container to be used
+  // let instanceContainer = device.createRayTracingAccelerationContainer({
+  //   level: "top",
+  //   usage: GPURayTracingAccelerationContainerUsage.PREFER_FAST_TRACE,
+  //   instances: [
+  //     {
+  //       usage: GPURayTracingAccelerationInstanceUsage.TRIANGLE_CULL_DISABLE,
+  //       mask: 0xFF,
+  //       instanceId: 0,
+  //       instanceOffset: 0x0,
+  //       transform: {
+  //         // translation: { x: 0, y: 0, z: 0 },
+  //         // rotation: { x: 0, y: 0, z: 0 },
+  //         // scale: { x: 1, y: 1, z: 1 }
+
+  //         translation: { x: 1, y: 1, z: 1 },
+  //         rotation: { x: 1, y: 1, z: 1 },
+  //         scale: { x: 1, y: 1, z: 1 }
+  //       },
+  //       geometryContainer: geometryContainer
+  //     }
+  //   ]
+  // });
+
+  // // first build all bottom-level containers
+  // {
+  //   let commandEncoder = device.createCommandEncoder({});
+  //   commandEncoder.buildRayTracingAccelerationContainer(geometryContainer);
+  //   queue.submit([commandEncoder.finish()]);
+  // }
+
+  // // now we can build the top-level containers
+  // // building them in separate passes is important
+  // {
+  //   let commandEncoder = device.createCommandEncoder({});
+  //   commandEncoder.buildRayTracingAccelerationContainer(instanceContainer);
+  //   queue.submit([commandEncoder.finish()]);
+  // }
+
+
+
+
+
+
+    let triangleVertices = new Float32Array([
     1.0, 1.0, 0.0,
     -1.0, 1.0, 0.0,
     0.0, -1.0, 0.0
@@ -125,7 +241,7 @@ Object.assign(global, glMatrix);
   triangleVertexBuffer2.setSubData(0, triangleVertices2);
 
   let triangleIndices2 = new Uint32Array([
-    2, 1, 0, 0, 3, 2
+2, 1, 0, 0, 3, 2
   ]);
   let triangleIndexBuffer2 = device.createBuffer({
     size: triangleIndices2.byteLength,
@@ -261,6 +377,10 @@ Object.assign(global, glMatrix);
         stage: GPUShaderStage.RAY_CLOSEST_HIT
       },
       {
+        module: rayShadowCHitShaderModule,
+        stage: GPUShaderStage.RAY_CLOSEST_HIT
+      },
+      {
         module: rayMissShaderModule,
         stage: GPUShaderStage.RAY_MISS
       },
@@ -285,14 +405,19 @@ Object.assign(global, glMatrix);
         type: "triangles-hit-group",
         closestHitIndex: 1 // ray closest-hit shader index
       },
+      // hit group
+      {
+        type: "triangles-hit-group",
+        closestHitIndex: 2 // ray closest-hit shader index
+      },
       // miss group
       {
         type: "general",
-        generalIndex: 2 // ray miss shader index
+        generalIndex: 3 // ray miss shader index
       },
       {
         type: "general",
-        generalIndex: 3 // ray miss shader index
+        generalIndex: 4 // ray miss shader index
       },
     ]
   });
@@ -458,7 +583,7 @@ Object.assign(global, glMatrix);
       passEncoder.traceRays(
         0, // sbt ray-generation offset
         1, // sbt ray-hit offset
-        2, // sbt ray-miss offset
+        3, // sbt ray-miss offset
         window.width,  // query width dimension
         window.height, // query height dimension
         1              // query depth dimension

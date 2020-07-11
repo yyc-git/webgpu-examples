@@ -9,10 +9,9 @@ layout(set = 0, binding = 0) uniform accelerationStructureEXT topLevelAS;
 
 void main() {
   const float tMin = 0.1;
-
   float tMax = 100000.0;
-  vec3 origin = vec3(0.1);
-  vec3 rayDir = vec3(0.2, 0.1, 0.3);
+  vec3 origin = vec3(0.0);
+  vec3 rayDir = vec3(0.1);
 
   uint flags = gl_RayFlagsTerminateOnFirstHitEXT;
   isShadowed = true;
@@ -30,5 +29,5 @@ void main() {
               1           // payload (location = 1)
   );
 
-  hitValue = vec3(0.9);
+  hitValue = vec3(0.2);
 }
